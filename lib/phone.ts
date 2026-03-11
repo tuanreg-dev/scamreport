@@ -51,8 +51,12 @@ export function classifyPhoneNumberGroups(
     groups.push("high_risk");
   }
 
-  // Foreign number group: numbers that do not use Vietnamese prefixes (+84/84/0 → normalized to 0...)
-  const usesVietnamPrefix = normalized.startsWith("0");
+  // Foreign number group: numbers that do not use Vietnamese prefixes
+  // (0... mobile/landline, 1900/1800 hotlines — these are not converted to 0... by normalizePhoneNumber)
+  const usesVietnamPrefix =
+    normalized.startsWith("0") ||
+    normalized.startsWith("1900") ||
+    normalized.startsWith("1800");
   if (!usesVietnamPrefix) {
     groups.push("foreign");
   }
