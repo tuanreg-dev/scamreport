@@ -8,6 +8,7 @@ import {
   isValidByContentType,
   normalizeByContentType
 } from "@/lib/content";
+import { PHONE_GROUP_LABELS, type PhoneNumberGroup } from "@/lib/phone";
 
 type CategoryCount = {
   category: string;
@@ -21,6 +22,7 @@ type SearchResponse = {
   totalReports: number;
   categories: CategoryCount[];
   message: string;
+  phoneGroups?: PhoneNumberGroup[];
   error?: string;
 };
 
@@ -203,8 +205,22 @@ export default function HomePage() {
               Loại nội dung: <span className="font-semibold">{CONTENT_TYPE_LABELS[searchResult.contentType]}</span>
             </p>
             <p className="text-sm text-slate-700">
-              Giá trị chuẩn hóa: <span className="font-semibold">{searchResult.contentValue}</span>
+              {searchResult.contentType === "phone" ? "Số điện thoại" : "Giá trị chuẩn hóa"}:{" "}
+              <span className="font-semibold">{searchResult.contentValue}</span>
             </p>
+            {searchResult.contentType === "phone" && searchResult.phoneGroups && searchResult.phoneGroups.length > 0 ? (
+              <div className="mt-2 flex flex-wrap gap-2">
+                <span className="text-sm text-slate-600">Phân loại:</span>
+                {searchResult.phoneGroups.map((group) => (
+                  <span
+                    key={group}
+                    className="inline-flex rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800"
+                  >
+                    {PHONE_GROUP_LABELS[group]}
+                  </span>
+                ))}
+              </div>
+            ) : null}
             {searchResult.exists ? (
               <>
                 <p className="mt-2 text-sm text-slate-700">

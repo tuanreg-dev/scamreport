@@ -7,6 +7,7 @@ import {
   isValidByContentType,
   normalizeByContentType
 } from "@/lib/content";
+import { classifyPhoneNumberGroups, type PhoneNumberGroup } from "@/lib/phone";
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
@@ -46,23 +47,32 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const stats = await getReportStats(detected.contentType, detected.contentValue);
     const contentLabel = CONTENT_TYPE_LABELS[detected.contentType];
 
+    const basePayload = {
+      contentType: detected.contentType,
+      contentValue: detected.contentValue,
+      categories: stats.totalReports > 0 ? stats.categories : []
+    };
+
+    if (detected.contentType === "phone") {
+      const phoneGroups: PhoneNumberGroup[] = classifyPhoneNumberGroups(detected.contentValue, {
+        reported: stats.totalReports > 0
+      });
+      Object.assign(basePayload, { phoneGroups });
+    }
+
     if (stats.totalReports === 0) {
       return NextResponse.json({
         exists: false,
-        contentType: detected.contentType,
-        contentValue: detected.contentValue,
+        ...basePayload,
         totalReports: 0,
-        categories: [],
         message: `${contentLabel} này chưa bị báo cáo.`
       });
     }
 
     return NextResponse.json({
       exists: true,
-      contentType: detected.contentType,
-      contentValue: detected.contentValue,
+      ...basePayload,
       totalReports: stats.totalReports,
-      categories: stats.categories,
       message: `${contentLabel} này đã bị báo cáo ${stats.totalReports} lần.`
     });
   } catch {
