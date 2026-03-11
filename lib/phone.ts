@@ -20,6 +20,22 @@ export function isValidVietnamPhoneNumber(value: string): boolean {
   return mobilePattern.test(value) || landlinePattern.test(value) || hotlinePattern.test(value);
 }
 
+/**
+ * True if normalized value looks like a Vietnamese phone prefix (incomplete number).
+ * Used so "1900", "1800", "028" etc. are detected as phone, not website/bank.
+ * Requires minimum length so short inputs like "02", "03" are not misclassified as phone.
+ */
+export function looksLikeVietnamPhonePrefix(normalized: string): boolean {
+  if (!/^\d+$/.test(normalized)) return false;
+  if (normalized === "1900" || normalized === "1800") return true;
+  if (/^(1900|1800)\d{0,4}$/.test(normalized)) return true;
+  // Mobile: 0 + (3|5|7|8|9) + at least 2 digits (min length 4, e.g. "0912")
+  if (/^0(3|5|7|8|9)\d{2,8}$/.test(normalized)) return true;
+  // Landline: 02 + at least 1 digit (min length 3, e.g. "028", "024")
+  if (/^02\d{1,8}$/.test(normalized)) return true;
+  return false;
+}
+
 export type PhoneNumberGroup = "high_risk" | "foreign" | "reported";
 
 export const PHONE_GROUP_LABELS: Record<PhoneNumberGroup, string> = {

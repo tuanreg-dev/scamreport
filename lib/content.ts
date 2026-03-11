@@ -1,4 +1,4 @@
-import { isValidVietnamPhoneNumber, normalizePhoneNumber } from "@/lib/phone";
+import { isValidVietnamPhoneNumber, looksLikeVietnamPhonePrefix, normalizePhoneNumber } from "@/lib/phone";
 
 export type ContentType = "phone" | "bank_account" | "website";
 
@@ -66,7 +66,7 @@ export function isValidByContentType(normalizedValue: string, contentType: Conte
 
 export function detectContentType(rawValue: string): { contentType: ContentType; contentValue: string } | null {
   const phoneValue = normalizeByContentType(rawValue, "phone");
-  if (isValidByContentType(phoneValue, "phone")) {
+  if (isValidByContentType(phoneValue, "phone") || looksLikeVietnamPhonePrefix(phoneValue)) {
     return { contentType: "phone", contentValue: phoneValue };
   }
 
